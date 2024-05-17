@@ -42,6 +42,29 @@ void WindowJeu() {
     }
 }
 
+void handleOptions(sf::RenderWindow& window) {
+    // Boucle pour l'écran des options
+    while (isOptions) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+                isOptions = false;
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                isOptions = false; // Sortir du mode options
+            }
+        }
+
+        window.clear(sf::Color::Black);
+
+        // Vous pouvez dessiner les éléments de l'écran des options ici
+        // Exemple :
+        // window.draw(...);
+
+        window.display();
+    }
+}
 
 int main()
 {
@@ -112,15 +135,11 @@ int main()
                 break;
             case sf::Event::MouseButtonPressed:
 
-                //clic options
+                // clic options
                 if (event.mouseButton.button == sf::Mouse::Left &&
                     optionsButton.getGlobalBounds().contains(mousePos))
                 {
-                    window.clear(sf::Color::Black);
                     isOptions = true;
-                    //Fullscreen(window);
-
-
                 }
 
                 if (event.mouseButton.button == sf::Mouse::Left && jouerButton.getGlobalBounds().contains(mousePos))
@@ -163,7 +182,10 @@ int main()
 
         // Efface et dessine la fenêtre
         window.clear(sf::Color::Black);
-        if (!isOptions) {
+        if (isOptions) {
+            handleOptions(window);
+        }
+        else {
             window.draw(jouerButton);
             window.draw(optionsButton);
             window.draw(quitterButton);
@@ -171,6 +193,7 @@ int main()
             window.draw(optionsText);
             window.draw(quitterText);
         }
+
 
         window.display();
     }
