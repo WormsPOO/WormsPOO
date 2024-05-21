@@ -83,7 +83,6 @@ public:
                     case sf::Event::EventType::KeyPressed:
                         break;
 
-
                     default:
                         break;
                 }

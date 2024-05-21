@@ -1,24 +1,36 @@
 #pragma once
-#include <SFML/Graphics.hpp>
-#include "Platform.h"
 class Rocket
 {
 public:
-    Rocket();
-    ~Rocket();
-    void Draw(sf::RenderWindow& w);
-    void setPosition(const sf::Vector2f& position);
-    void move(const sf::Vector2f& offset);
-    const sf::RectangleShape& getShape() const;
-    bool checkCollision(const Platform& platform);
+	Rocket() {
+		if (!texture.loadFromFile("./assets/rocket.png")) {
+			std::cerr << "Erreur lors du chargement de la texture de la roquette" << std::endl;
+		}
+		sprite.setTexture(texture);
+		sprite.setScale(0.5f, 0.5f);
+		sprite.setTextureRect(sf::IntRect(0, 0, 500, 500));
+	}
+	void setPosition(const sf::Vector2f& pos) {
+		sprite.setPosition(pos);
+	}
 
+	void setDirection(const sf::Vector2f& dir) {
+		direction = dir;
+	}
+
+	void move(float deltaTime) {
+		sprite.move(direction * speed * deltaTime);
+	}
+
+	void draw(sf::RenderWindow& window) const {
+		window.draw(sprite);
+	}
 private:
-    // Création de la roquette
-    sf::RectangleShape roquette;
-    sf::Texture t;
-    const float RADIUS_IMPACT = 30.0f;
-    const float Speed = 700.0f;
-    sf::Vector2f posRocket;
-    sf::Vector2f Direction;
+	const float RADIUS_IMPACT = 30.0f;
+	const float speed = 700.0f;
+	sf::Sprite sprite;
+	sf::Texture texture;
+	sf::Vector2f position;
+	sf::Vector2f direction;
 };
 

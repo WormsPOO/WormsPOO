@@ -133,22 +133,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Platform.cpp" />
-    <ClCompile Include="PlatformModel.cpp" />
-    <ClCompile Include="Rocket.cpp" />
-    <ClCompile Include="RocketModel.cpp" />
-    <ClCompile Include="Worms.cpp" />
-    <ClCompile Include="WormsModel.cpp" />
     <ClCompile Include="WormsPOO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Menu.h" />
-    <ClInclude Include="Platform.h" />
-    <ClInclude Include="PlatformModel.h" />
     <ClInclude Include="Rocket.h" />
-    <ClInclude Include="RocketModel.h" />
-    <ClInclude Include="Worms.h" />
-    <ClInclude Include="WormsModel.h" />
+    <ClInclude Include="Worm.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
