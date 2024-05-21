@@ -131,13 +131,19 @@ public:
                         // clic options
                         if (event.mouseButton.button == sf::Mouse::Left && fullscreenButton.getGlobalBounds().contains(mousePos))
                         {
-                            isOptions = true;
+                            if (isFullscreen){
+                                fullscreenButton.setTexture(onbuttonTexture);
+                            } else{
+								fullscreenButton.setTexture(offbuttonTexture);
+							}
+							isFullscreen = !isFullscreen;
+                            fullscreen(window);
                         }
                         break;
 
                     case sf::Event::KeyPressed:
                         if (event.key.code == sf::Keyboard::Escape) {
-                            isOptions = false; // Sortir du mode options
+                            isOptions = false;
                         }
                         break;
 
@@ -149,15 +155,19 @@ public:
 
             window.clear(sf::Color::Black);
 
-            // Vous pouvez dessiner les éléments de l'écran des options ici
-            // Exemple :
-            // window.draw(...);
             window.draw(backgroundSprite);
             window.draw(text);
             window.draw(fullscreenButton);
 
             window.display();
         }
+    }
+    void fullscreen(sf::RenderWindow& window) {
+        window.close();
+        if (isFullscreen)
+            window.create(sf::VideoMode::getFullscreenModes()[0], windowname, sf::Style::Fullscreen);
+        else
+            window.create(sf::VideoMode(1800, 900), windowname);
     }
     private:
         bool isOptions = false;
@@ -171,6 +181,8 @@ public:
         sf::Sprite quitButton;
         sf::Sprite fullscreenButton;
         bool isMenuActive;
+        bool isFullscreen;
+        std::string windowname = "Options";
         sf::Font font;
         sf::Text text;
         sf::Texture onbuttonTexture;
