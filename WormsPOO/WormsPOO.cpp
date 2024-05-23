@@ -1,6 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
+#include <time.h>
+#include <cstdlib>
+#include <vector>
 #include "menu.h"
 #include "Worm.h"
 #include "Rocket.h"
@@ -40,10 +43,24 @@ int main()
     sf::Vector2u windowSize = window.getSize();
     window.setFramerateLimit(60);
 
+    srand(time(NULL));
+
+    std::vector<sf::Vector2f> positions = {
+        sf::Vector2f(100.f, windowSize.y - 700.f),
+        sf::Vector2f(900.f, windowSize.y - 750.f),
+        sf::Vector2f(1400.f, windowSize.y - 850.f),
+        sf::Vector2f(150.f, windowSize.y - 280.f),
+        sf::Vector2f(1200.f, windowSize.y - 270.f)
+    };
+
+    int randomIndex = std::rand() % positions.size();
+    sf::Vector2f randomPosition = positions[randomIndex];
+    std::cout << "Position aléatoire sélectionnée: (" << randomPosition.x << ", " << randomPosition.y << ")\n";
+
     Terrain terrain(windowSize);
 
     Worm worm;
-    worm.setPosition(sf::Vector2f(100.f, windowSize.y - 100.f), terrain);
+    worm.setPosition(randomPosition, terrain);
 
     std::vector<Rocket*> rockets;
 
@@ -84,12 +101,12 @@ int main()
                     break;
             }
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-            worm.move(-deltaTime.asSeconds(), 0, terrain);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            worm.move(deltaTime.asSeconds(), 0, terrain);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             worm.jump();
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+            worm.move(-deltaTime.asSeconds(), 0, terrain, &window);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            worm.move(deltaTime.asSeconds(), 0, terrain, &window);
 
         if (isMousePressed) {
             worm.aim(window.mapPixelToCoords(sf::Mouse::getPosition(window)));

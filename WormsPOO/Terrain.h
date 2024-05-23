@@ -122,6 +122,24 @@ public:
         sf::Color pixelColor = image.getPixel(point.x, point.y);
         return pixelColor.a != 0; // Vérifie si le pixel est opaque
     }
+    float getGroundAngleAtPoint(const sf::Vector2f& point) const {
+        for (const auto& shape : { &leftIsland, &centerIsland, &rightIsland, &ground }) {
+            if (shape->getGlobalBounds().contains(point)) {
+                //std::cout << shape->getPointCount() << std::endl;
+                for (size_t i = 0; i < shape->getPointCount(); ++i) {
+                    //std::cout << shape->getPoint(i).x << "  " << shape->getPoint(i).y << std::endl;
+                    sf::Vector2f p1 = shape->getTransform().transformPoint(shape->getPoint(i));
+                    sf::Vector2f p2 = shape->getTransform().transformPoint(shape->getPoint((i + 1) % shape->getPointCount()));
+                    if ((point.x >= std::min(p1.x, p2.x) && point.x <= std::max(p1.x, p2.x)) &&
+                        (point.y >= std::min(p1.y, p2.y) && point.y <= std::max(p1.y, p2.y))) {
+                        float angle = std::atan2(p2.y - p1.y, p2.x - p1.x) * 180 / 3.14159265f;
+                        return angle;
+                    }
+                }
+            }
+        }
+        return 0.f; 
+    }
 private:
     sf::ConvexShape leftIsland;
     sf::ConvexShape rightIsland;

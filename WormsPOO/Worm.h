@@ -26,14 +26,14 @@ public:
 		healthBarBackground.setFillColor(sf::Color::Black);
 		healthBarBackground.setPosition(sprite.getPosition().x - 12.f, sprite.getPosition().y - 17.f);
 
-		collisionLine.setSize(sf::Vector2f(1.f, sprite.getGlobalBounds().getSize().y));
-		collisionLine.setFillColor(sf::Color::Red); //DEBUG
-		collisionLine.setPosition(sprite.getPosition().x + (sprite.getGlobalBounds().getSize().x / 2.f), sprite.getPosition().y);
+		collisionLine.setSize(sf::Vector2f(1.f, sprite.getGlobalBounds().getSize().y / 2));
+		collisionLine.setFillColor(sf::Color::Transparent); //DEBUG
+		collisionLine.setPosition(sprite.getPosition().x + (sprite.getGlobalBounds().getSize().x / 2.f), sprite.getPosition().y + sprite.getGlobalBounds().getSize().y / 2);
 	};
 	void setPosition(sf::Vector2f position, const Terrain& terrain) {
 		sprite.setPosition(position);
 		healthBar.setPosition(position.x - 10.f, position.y - 15.f);
-		collisionLine.setPosition(position.x + (sprite.getGlobalBounds().getSize().x / 2.f), position.y);
+		collisionLine.setPosition(position.x + (sprite.getGlobalBounds().getSize().x / 2.f), position.y + sprite.getGlobalBounds().getSize().y / 2);
 		healthBarBackground.setPosition(position.x - 12.f, position.y - 17.f);
 		while (checkCollisionWithLine(terrain)) {
 			sprite.move(0, -1.f);
@@ -45,17 +45,33 @@ public:
 	sf::Vector2f getPosition() const {
 		return sprite.getPosition();
 	}
-	void move(float offsetX, float offsetY, Terrain& terrain) {
+	void move(float offsetX, float offsetY, Terrain& terrain, sf::RenderWindow* window) {
+		//BUG QUAND IL EST SUR LA RIGHTISLAND, WORM SURELEVE
+		sf::Vector2u windowSize = window->getSize();
+
+		if (sprite.getPosition().x < 0) {
+			healthBar.move((- offsetX * speed) + 2, offsetY);
+			healthBarBackground.move((- offsetX * speed) + 2, offsetY);
+			sprite.move((- offsetX * speed) + 2, offsetY);
+			collisionLine.move((- offsetX * speed) + 2, offsetY);
+		}
+		else if (sprite.getPosition().x + sprite.getGlobalBounds().width > windowSize.x) {
+			healthBar.move((-offsetX * speed) - 2, offsetY);
+			healthBarBackground.move((-offsetX * speed) - 2, offsetY);
+			sprite.move((-offsetX * speed) - 2, offsetY);
+			collisionLine.move((-offsetX * speed) - 2, offsetY);
+		}
+
 		healthBar.move(offsetX * speed, offsetY);
 		healthBarBackground.move(offsetX * speed, offsetY);
 		sprite.move(offsetX * speed, offsetY);
 		collisionLine.move(offsetX * speed, offsetY);
 		if (offsetX != 0) {
-			if (!checkCollisionWithLine(terrain)) {
+			if (!checkCollisionWithLine(terrain)) { //si le worm avance sur une pente descendante
 				onGround = false;
 			}
 		}
-		if (checkCollisionWithSprite(terrain)) {
+		if (checkCollisionWithSprite(terrain)) { // si le worm essaie d'avancer dans un terrain
 			std::cout << "Collision" << std::endl;
 			healthBar.move(- offsetX * speed, offsetY);
 			healthBarBackground.move(- offsetX * speed, offsetY);
@@ -84,7 +100,7 @@ public:
 			sprite.move(0, verticalSpeed * deltaTime);
 			collisionLine.move(0, verticalSpeed * deltaTime);
 
-			if (checkCollisionWithLine(terrain)) {
+			if (checkCollisionWithLine(terrain)) { //atterit
 				verticalSpeed = 0.f;
 				onGround = true;
 				sprite.move(0, -verticalSpeed * deltaTime);
@@ -92,6 +108,23 @@ public:
 				healthBarBackground.move(0, -verticalSpeed * deltaTime);
 				collisionLine.move(0, -verticalSpeed * deltaTime);
 			}
+		}
+
+		float angle = abs(getGroundAngle(terrain));
+
+		if (checkCollisionWithLine(terrain)) { //faire monter le worm s'il monte une pente, plus l'angle est élevé, plus il est ralenti
+			sprite.move(0, -1 - (int)angle / 10);
+			healthBar.move(0, -1 - (int)angle / 10);
+			healthBarBackground.move(0, -1 - (int)angle / 10);
+			collisionLine.move(0, -1 - (int)angle / 10);
+		}
+		if (checkCollisionWithSprite(terrain)) { // si le worm se cogne la tete
+			verticalSpeed = 0.f;
+			verticalSpeed += GRAVITY * deltaTime;
+			healthBar.move(0, verticalSpeed * deltaTime);
+			healthBarBackground.move(0, verticalSpeed * deltaTime);
+			sprite.move(0, verticalSpeed * deltaTime);
+			collisionLine.move(0, verticalSpeed * deltaTime);
 		}
 	}
 	void update(float deltaTime, const Terrain& terrain) {
@@ -101,7 +134,7 @@ public:
 		sf::Vector2f centerWorm = sprite.getPosition() + sf::Vector2f(sprite.getGlobalBounds().width / 2.f, sprite.getGlobalBounds().height / 2.f - 50.f);
 		sf::Vector2f direction = mousePos - centerWorm;
 		float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-		aimLine.setSize(sf::Vector2f(length, 3.f)); // Longueur de la ligne, largeur de 5 pixels
+		aimLine.setSize(sf::Vector2f(length, 3.f));
 		float angle = std::atan2(direction.y, direction.x) * 180.f / 3.14159f;
 		aimLine.setRotation(angle);
 		aimLine.setPosition(centerWorm);
@@ -111,7 +144,7 @@ public:
 		sf::Vector2f position = sprite.getPosition() + sf::Vector2f(sprite.getGlobalBounds().width / 2.f , sprite.getGlobalBounds().height / 2.f - 50.f);
 		sf::Vector2f direction = targetPosition - position;
 		float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-		direction /= length; // Normalisation
+		direction /= length;
 		rocket->setPosition(position);
 		rocket->setDirection(direction);
 		return rocket;
@@ -122,9 +155,14 @@ public:
 	bool checkCollisionWithSprite(const Terrain& terrain) {
 		return terrain.isCollidingSprite(sprite);
 	}
+	float getGroundAngle(const Terrain& terrain) const {
+		sf::FloatRect bounds = sprite.getGlobalBounds();
+		sf::Vector2f bottomLeft(bounds.left, bounds.top + bounds.height);
+		return terrain.getGroundAngleAtPoint(bottomLeft);
+	}
 	
 private:
-	const float speed = 400.f;
+	float speed = 250.f;
 	const float GRAVITY = 981.0f;
 	const float JUMP_VELOCITY = -400.0f;
 	sf::Texture texture;
