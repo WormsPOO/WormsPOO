@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "Worm.h"
 #include "Rocket.h"
+#include "Terrain.h"
 
 
 sf::Font font;
@@ -39,10 +40,13 @@ int main()
     sf::Vector2u windowSize = window.getSize();
     window.setFramerateLimit(60);
 
+    Terrain terrain(windowSize);
+
     Worm worm;
-    worm.setPosition(sf::Vector2f(100.f, windowSize.y - 283.f));
+    worm.setPosition(sf::Vector2f(100.f, windowSize.y - 100.f), terrain);
 
     std::vector<Rocket*> rockets;
+
 
     Menu menu(window);
     menu.showMenu(window);
@@ -69,7 +73,10 @@ int main()
                 case sf::Event::MouseButtonReleased:
                     if (event.mouseButton.button == sf::Mouse::Left && isMousePressed) {
                         isMousePressed = false;
-                        rockets.push_back(worm.shoot(mousePos));
+                        if (rockets.empty()) {
+                            rockets.push_back(worm.shoot(mousePos));
+                            shootRocket = true;
+                        }
                     }
                     break;
 
@@ -78,9 +85,9 @@ int main()
             }
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-            worm.move(-deltaTime.asSeconds(), 0);
+            worm.move(-deltaTime.asSeconds(), 0, terrain);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            worm.move(deltaTime.asSeconds(), 0);
+            worm.move(deltaTime.asSeconds(), 0, terrain);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             worm.jump();
 
@@ -88,19 +95,32 @@ int main()
             worm.aim(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
         }
 
-        worm.update(deltaTime.asSeconds(), window.getSize());
+        worm.update(deltaTime.asSeconds(), terrain);
 
-        for (auto& rocket : rockets) {
-            rocket->move(deltaTime.asSeconds());
+        for (auto rocket = rockets.begin(); rocket != rockets.end(); ) {
+            (*rocket)->move(deltaTime.asSeconds());
+            if ((*rocket)->isOffScreen(windowSize)) {
+                delete* rocket;
+                rocket = rockets.erase(rocket);
+                shootRocket = false;
+            }
+            else {
+                ++rocket;
+            }
         }
 
         window.clear();
         window.draw(backgroundSprite);
+        terrain.draw(window);
         worm.draw(window, isMousePressed);
         for (const auto& rocket : rockets) {
             rocket->draw(window);
         }
         window.display();
+    }
+
+    for (auto rocket : rockets) {
+        delete rocket;
     }
 
     return 0;
