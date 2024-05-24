@@ -10,6 +10,7 @@
 #include "Worm.h"
 #include "Rocket.h"
 #include "Terrain.h"
+#include "Overlay.h"
 
 
 sf::Font font;
@@ -81,12 +82,7 @@ int main()
     bool turnWorm1 = true;
     const float turnDuration = 10.0f;
 
-    sf::Text turnTimerText; //A METTRE DANS LA CLASSE OVERLAY
-    turnTimerText.setFont(font);
-    turnTimerText.setCharacterSize(24);
-    turnTimerText.setFillColor(sf::Color::Black);
-    turnTimerText.setPosition(10.f, 10.f);
-
+    Overlay overlay(&font);
 
     // boucle jeu
     while (window.isOpen())
@@ -135,13 +131,9 @@ int main()
             remainingTime = turnDuration;
         }
 
-        std::ostringstream ss; //CA AUSSI DANS OVERLAY
-        ss << std::fixed << std::setprecision(1) << remainingTime;
-        turnTimerText.setString("Temps restant: " + ss.str() + "s");
-
         if (turnWorm1) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-                worm1.jump();
+                worm1.jump(&terrain);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 worm1.move(-deltaTime.asSeconds(), 0, terrain, &window);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
@@ -155,7 +147,7 @@ int main()
         }
         else {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-                worm2.jump();
+                worm2.jump(&terrain);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 worm2.move(-deltaTime.asSeconds(), 0, terrain, &window);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
@@ -188,7 +180,7 @@ int main()
         for (const auto& rocket : rockets) {
             rocket->draw(window);
         }
-        window.draw(turnTimerText);
+        overlay.draw(remainingTime, &window);
         window.display();
     }
 

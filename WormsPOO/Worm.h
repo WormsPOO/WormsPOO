@@ -46,7 +46,6 @@ public:
 		return sprite.getPosition();
 	}
 	void move(float offsetX, float offsetY, Terrain& terrain, sf::RenderWindow* window) {
-		//BUG QUAND IL EST SUR LA RIGHTISLAND, WORM SURELEVE
 		sf::Vector2u windowSize = window->getSize();
 
 		if (sprite.getPosition().x < 0) {
@@ -86,13 +85,20 @@ public:
 		window.draw(collisionLine);
 		if (isMousePressed) window.draw(aimLine);
 	}
-	void jump() {
+	void jump(Terrain* terrain) {
 		if (onGround) {
 			verticalSpeed = JUMP_VELOCITY;
 			onGround = false;
 		}
+		else {
+			sf::FloatRect bounds = sprite.getGlobalBounds();
+			sf::Vector2f bottomLeft(bounds.left, bounds.top + bounds.height);
+			if (terrain->isNearGround(bottomLeft, 15.0f)) { //AJUSTER LA DISTANCE MAIS 15 CA A L'AIR COOL
+				verticalSpeed = JUMP_VELOCITY;
+			}
+		}
 	}
-	void applyGravity(float deltaTime, const Terrain& terrain) {
+	void applyGravity(float deltaTime, const Terrain& terrain) { //BUG S'ACCROCHE A L'ILE CENTRALE
  		if (!onGround) {
 			verticalSpeed += GRAVITY * deltaTime;
 			healthBar.move(0, verticalSpeed * deltaTime);
@@ -114,7 +120,7 @@ public:
 		if (angle > 135) { // PAS OPTI TROUVER MEILLEURE SOLUTION
 			angle -= 90;
 		}
-		std::cout << "angle " << angle << std::endl;
+		//std::cout << "angle " << angle << std::endl;
 
 		if (checkCollisionWithLine(terrain)) { //faire monter le worm s'il monte une pente, plus l'angle est élevé, plus il est ralenti
 			sprite.move(0, -1 - (int)angle / 10);

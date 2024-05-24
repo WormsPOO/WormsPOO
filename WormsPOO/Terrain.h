@@ -140,6 +140,18 @@ public:
         }
         return 0.f; 
     }
+    bool isNearGround(const sf::Vector2f& point, float distance) const {
+        for (int x = static_cast<int>(point.x) - distance; x <= static_cast<int>(point.x) + distance; ++x) {
+            for (int y = static_cast<int>(point.y) - distance; y <= static_cast<int>(point.y) + distance; ++y) {
+                if (x >= 0 && x < static_cast<int>(collisionImage.getSize().x) && y >= 0 && y < static_cast<int>(collisionImage.getSize().y)) {
+                    if (collisionImage.getPixel(x, y).a != 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 private:
     sf::ConvexShape leftIsland;
     sf::ConvexShape rightIsland;
