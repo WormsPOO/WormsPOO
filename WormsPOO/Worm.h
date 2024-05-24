@@ -48,7 +48,7 @@ public:
 	void move(float offsetX, float offsetY, Terrain& terrain, sf::RenderWindow* window) {
 		sf::Vector2u windowSize = window->getSize();
 
-		if (sprite.getPosition().x < 0) {
+		if (sprite.getPosition().x < 0) { //si le sprite dépasse les bords de l'écran
 			healthBar.move((- offsetX * speed) + 2, offsetY);
 			healthBarBackground.move((- offsetX * speed) + 2, offsetY);
 			sprite.move((- offsetX * speed) + 2, offsetY);
