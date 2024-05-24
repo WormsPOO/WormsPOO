@@ -111,6 +111,10 @@ public:
 		}
 
 		float angle = abs(getGroundAngle(terrain));
+		if (angle > 135) { // PAS OPTI TROUVER MEILLEURE SOLUTION
+			angle -= 90;
+		}
+		std::cout << "angle " << angle << std::endl;
 
 		if (checkCollisionWithLine(terrain)) { //faire monter le worm s'il monte une pente, plus l'angle est élevé, plus il est ralenti
 			sprite.move(0, -1 - (int)angle / 10);
